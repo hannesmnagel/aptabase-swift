@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "Aptabase",
     platforms: [
-      .iOS(.v13),
-      .macCatalyst(.v13),
+      .iOS(.v14),
+      .macCatalyst(.v14),
       .macOS(.v10_15),
       .watchOS(.v6),
       .tvOS(.v13),

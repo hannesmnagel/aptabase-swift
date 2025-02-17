@@ -1,23 +1,45 @@
-import Foundation
+import SwiftUI
 
-class ConcurrentQueue<T> {
+
+class ConcurrentQueue {
+    private var userDefaultsGroup : String?
     private var queue = DispatchQueue(label: "com.aptabase.ConcurrentQueue", attributes: .concurrent)
-    private var elements = [T]()
+    private var elements : [Event] {
+        get {
+            if let array = (UserDefaults(suiteName: userDefaultsGroup) ?? UserDefaults.standard).array(forKey: "aptabase-events"){
+                return array.compactMap { any in
+                    if let data = any as? Data {
+                        return try? JSONDecoder().decode(Event.self, from: data)
+                    } else {
+                        return nil
+                    }
+                }
+            } else { return [] }
 
-    func enqueue(_ element: T) {
+        } set {
+            (UserDefaults(suiteName: userDefaultsGroup) ?? UserDefaults.standard).set(
+                newValue.compactMap({ event in
+                    try? JSONEncoder().encode(event)
+                }),
+                forKey: "aptabase-events"
+            )
+        }
+    }
+
+    func enqueue(_ element: Event) {
         queue.async(flags: .barrier) {
             self.elements.append(element)
         }
     }
 
-    func enqueue(contentsOf newElements: [T]) {
+    func enqueue(contentsOf newElements: [Event]) {
         queue.async(flags: .barrier) {
             self.elements.append(contentsOf: newElements)
         }
     }
 
-    func dequeue() -> T? {
-        var result: T?
+    func dequeue() -> Event? {
+        var result: Event?
         queue.sync {
             if !self.elements.isEmpty {
                 result = self.elements.removeFirst()
@@ -26,8 +48,8 @@ class ConcurrentQueue<T> {
         return result
     }
 
-    func dequeue(count: Int) -> [T] {
-        var dequeuedElements = [T]()
+    func dequeue(count: Int) -> [Event] {
+        var dequeuedElements = [Event]()
         queue.sync {
             for _ in 0 ..< min(count, self.elements.count) {
                 dequeuedElements.append(self.elements.removeFirst())
@@ -50,5 +72,8 @@ class ConcurrentQueue<T> {
             count = self.elements.count
         }
         return count
+    }
+    init(userDefaultsGroup: String?) {
+        self.userDefaultsGroup = userDefaultsGroup
     }
 }

@@ -1,13 +1,13 @@
 import Foundation
 
-struct Event: Encodable {
+struct Event: Codable {
     var timestamp: Date
     var sessionId: String
     var eventName: String
     var systemProps: SystemProps
     var props: [String: AnyCodableValue]?
 
-    struct SystemProps: Encodable {
+    struct SystemProps: Codable {
         var isDebug: Bool
         var locale: String
         var osName: String
@@ -26,13 +26,13 @@ protocol URLSessionProtocol {
 extension URLSession: URLSessionProtocol {}
 
 public class EventDispatcher {
-    private var events = ConcurrentQueue<Event>()
+    private var events : ConcurrentQueue
     private let maximumBatchSize = 25
     private let headers: [String: String]
     private let apiUrl: URL
     private let session: URLSessionProtocol
 
-    init(appKey: String, baseUrl: String, env: EnvironmentInfo, session: URLSessionProtocol = URLSession.shared) {
+    init(appKey: String, baseUrl: String, env: EnvironmentInfo, session: URLSessionProtocol = URLSession.shared, userDefaultsGroup: String? = nil) {
         self.session = session
         apiUrl = URL(string: "\(baseUrl)/api/v0/events")!
         headers = [
@@ -40,6 +40,7 @@ public class EventDispatcher {
             "App-Key": appKey,
             "User-Agent": "\(env.osName)/\(env.osVersion) \(env.locale)"
         ]
+        events = ConcurrentQueue(userDefaultsGroup: userDefaultsGroup)
     }
 
     func enqueue(_ newEvent: Event) {

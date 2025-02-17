@@ -22,7 +22,7 @@ public class Aptabase: NSObject {
     /// - Parameters:
     ///   - appKey: The App Key to use.
     ///   - options: Optional initialization options.
-    public func initialize(appKey: String, with options: InitOptions? = nil) {
+    public func initialize(appKey: String, with options: InitOptions? = nil, userDefaultsGroup: String? = nil) {
         let parts = appKey.components(separatedBy: "-")
         if parts.count != 3 || hosts[parts[1]] == nil {
             debugPrint("The Aptabase App Key \(appKey) is invalid. Tracking will be disabled.")
@@ -37,7 +37,7 @@ public class Aptabase: NSObject {
             env.isDebug = trackingMode.isDebug
         }
 
-        client = AptabaseClient(appKey: appKey, baseUrl: baseUrl, env: env, options: options)
+        client = AptabaseClient(appKey: appKey, baseUrl: baseUrl, env: env, options: options, userDefaultsGroup: userDefaultsGroup)
 
         let notifications = NotificationCenter.default
         #if os(tvOS) || os(iOS) || os(visionOS)
@@ -97,6 +97,9 @@ public class Aptabase: NSObject {
         Task {
             await self.client?.flush()
         }
+    }
+    @objc public func flushNow() async {
+        await self.client?.flush()
     }
 
     private func enqueueEvent(_ eventName: String, with props: [String: AnyCodableValue] = [:]) {

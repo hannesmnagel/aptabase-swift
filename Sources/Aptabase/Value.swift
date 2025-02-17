@@ -8,7 +8,7 @@ extension String: Value {}
 extension Float: Value {}
 extension Bool: Value {}
 
-enum AnyCodableValue: Encodable {
+enum AnyCodableValue: Codable {
     case integer(Int)
     case string(String)
     case float(Float)
