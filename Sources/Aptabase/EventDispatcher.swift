@@ -1,13 +1,13 @@
 import Foundation
 
-struct Event: Codable {
+struct Event: Codable, Equatable {
     var timestamp: Date
     var sessionId: String
     var eventName: String
     var systemProps: SystemProps
     var props: [String: AnyCodableValue]?
 
-    struct SystemProps: Codable {
+    struct SystemProps: Codable, Equatable {
         var isDebug: Bool
         var locale: String
         var osName: String

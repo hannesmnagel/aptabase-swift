@@ -41,8 +41,9 @@ class ConcurrentQueue {
     func dequeue() -> Event? {
         var result: Event?
         queue.sync {
-            if !self.elements.isEmpty {
-                result = self.elements.removeFirst()
+            if let first = self.elements.first {
+                result = first
+                self.elements.removeAll(where: {$0 == first})
             }
         }
         return result
@@ -52,7 +53,10 @@ class ConcurrentQueue {
         var dequeuedElements = [Event]()
         queue.sync {
             for _ in 0 ..< min(count, self.elements.count) {
-                dequeuedElements.append(self.elements.removeFirst())
+                if let first = self.elements.first {
+                    dequeuedElements.append(first)
+                    self.elements.removeAll(where: {$0 == first})
+                }
             }
         }
         return dequeuedElements
